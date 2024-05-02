@@ -6,7 +6,7 @@ import pyaudio
 import os
 import time
 
-wake_word = 'sia'
+wake_word = 'apple'
 listening_for_wake_word = True
 
 whisper_size = 'base'
@@ -14,7 +14,7 @@ num_cores = os.cpu_count()
 whisper_model = WhisperModel(whisper_size, device='cpu', compute_type='int8', cpu_threads=num_cores,
                              num_workers=num_cores)
 
-OPENAI_API_KEY = 'REPLACE YOUR OPEN AI API KEY'
+OPENAI_API_KEY = 'REPLACE YOUR OPEAI AI API KEY'
 client = OpenAI(api_key=OPENAI_API_KEY)
 GOOGLE_API_KEY = 'REPLACE YOUR GOOGLE AI API KEY'
 genai.configure(api_key=GOOGLE_API_KEY)
@@ -45,9 +45,10 @@ safety_settings = [
     },
 ]
 
-model = genai.GenerativeModel('gemini-1.0-pro-latest',
+model = genai.GenerativeModel('gemini-1.5-pro-latest',
                               generation_config=generation_config,
                               safety_settings=safety_settings)
+
 convo = model.start_chat()
 
 system_message = '''
@@ -96,7 +97,7 @@ def listen_for_wake_word(audio):
 
     wake_audio_path = 'wav_detect.wav'
     with open(wake_audio_path, 'wb') as f:
-        f.write(audio.get_out_data())
+        f.write(audio.get_wav_data())
 
     text_input = wav_to_text(wake_audio_path)
 
@@ -112,7 +113,7 @@ def prompt_gpt(audio):
         prompt_audio_path = 'prompt.wav'
 
         with open(prompt_audio_path, 'wb') as f:
-            f.write(audio.get_out_data())
+            f.write(audio.get_wav_data())
 
         prompt_text = wav_to_text(prompt_audio_path)
         if len(prompt_text.strip()) == 0:
@@ -124,7 +125,7 @@ def prompt_gpt(audio):
             convo.send_message(prompt_text)
             output = convo.last.text
 
-            print('Sia: ', output)
+            print('Gemini: ', output)
             speak(output)
 
             print('\nSay', wake_word, 'to wake me up. \n')
