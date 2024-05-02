@@ -6,7 +6,7 @@ import pyaudio
 import os
 import time
 
-wake_word = 'apple'
+wake_word = 'google'
 listening_for_wake_word = True
 
 whisper_size = 'base'
@@ -20,10 +20,10 @@ GOOGLE_API_KEY = 'REPLACE YOUR GOOGLE AI API KEY'
 genai.configure(api_key=GOOGLE_API_KEY)
 
 generation_config = {
-    "temperature": 0.7,
+    "temperature": 0.9,
     "top_p": 1,
     "top_k": 1,
-    "max_output_tokens": 2048,
+    "max_output_tokens": 1024,
 }
 
 safety_settings = [
@@ -58,6 +58,80 @@ SYSTEM MESSAGE: You are being used to power a voice assistant and should respond
 As a voice assistant, use short sentences and directly respond to the prompt without excessive information. 
 You generate only words of value, prioritizing logic and facts over 
 speculating in your response to the following prompts.
+
+{
+  "functionality": [
+    {
+      "name":"Sign In",
+      "ui_components": [
+        {
+          "component": "Input-TextBox",
+          "label":"Email or phone",
+          "purpose":"Input of Email or Phone",
+          "errors":[
+            {
+              "error_text":"Couldn't find your Google Account",
+              "resolution":"Enter your valid gmail address or phone number."
+            },
+            {
+              "error_text":"Enter a valid email or phone number",
+              "resolution":"& _ ' - + , < > and space are not allowed in gmail address."
+            }
+          ]
+        },
+        {
+          "component": "Text-Hyperlink",
+          "label":"Forgot email?",
+          "purpose":"redirect to forgot password page",
+          "errors":[
+          ]
+        },
+        {
+          "component": "Button-Next",
+          "label":"Next",
+          "purpose":"redirect to enter password page",
+          "errors":[
+            {
+              "error_text":"Enter an email or phone number",
+              "resolution":"Enter your valid gmail address or phone number."
+            },
+            {
+              "error_text":"Couldn't find your Google Account",
+              "resolution":"Enter your valid gmail address."
+            }
+          ]
+        },
+        {
+          "component": "Text-Hyperlink",
+          "label":"Create account",
+          "purpose":"Popups 3 options for create different type of accounts",
+          "options": [
+            {
+              "option_text":"For my personal user",
+              "purpose":"redirects to personal account creation page."
+            },
+            {
+              "option_text":"For my child",
+              "purpose":"redirects to child account creation page."
+            },
+            {
+              "option_text":"For work or my business",
+              "purpose":"redirects to work or my business account creation page."
+            }
+          ],
+          "errors":[
+            
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+You are gmail customer support agent named as google. 
+Based on above provided json you are responsible for providing 
+the instructions and resolution to their question or query and help them.
+Say "pardon me" if user ask question except the provided json information to you.
 '''
 
 system_message = system_message.replace(f'\n', '')
@@ -77,7 +151,7 @@ def speak(text):
             response_format="pcm",
             input=text,
     ) as response:
-        silence_threshold = 0.01
+        silence_threshold = 0.00
         for chunk in response.iter_bytes(chunk_size=1024):
             if stream_start:
                 player_stream.write(chunk)
@@ -146,13 +220,13 @@ def callback(recognizer, audio):
 
 def start_listening():
     with source as s:
-        r.adjust_for_ambient_noise(s, duration=2)
+        r.adjust_for_ambient_noise(s, duration=1)
 
     print('\nSay', wake_word, 'to wake me up. \n')
     r.listen_in_background(source, callback)
 
     while True:
-        time.sleep(0.5)
+        time.sleep(0.3)
 
 
 if __name__ == '__main__':
